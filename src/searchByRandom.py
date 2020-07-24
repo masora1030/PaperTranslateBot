@@ -1,7 +1,7 @@
 import arxiv
 import random
-from src.translate import traslateBydeepL
-from src.cat_list import cat_list
+from translate import traslateBydeepL
+from cat_list import cat_list
 
 
 def searchByRandom():

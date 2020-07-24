@@ -1,8 +1,8 @@
 '''Random search Module'''
 
-from src.searchByRandom import searchByRandom
-from src.makeHTML import makeHTML
-from src.makeJPG import makeJPG
+from searchByRandom import searchByRandom
+from makeHTML import makeHTML
+from makeJPG import makeJPG
 
 def getOutputByRandom():
     TwitterID = 'eigoyurusan'

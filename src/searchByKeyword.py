@@ -1,5 +1,5 @@
 import arxiv
-from src.translate import traslateBydeepL
+from translate import traslateBydeepL
 import re
 import random
 

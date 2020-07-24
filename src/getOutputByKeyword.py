@@ -1,8 +1,8 @@
 '''Keyword search Module'''
 
-from src.searchByKeyword import searchByKeyword
-from src.makeHTML import makeHTML
-from src.makeJPG import makeJPG
+from searchByKeyword import searchByKeyword
+from makeHTML import makeHTML
+from makeJPG import makeJPG
 
 def getOutputByKeyword(TwitterID, keyward):
     Summary_list = searchByKeyword(keyward)

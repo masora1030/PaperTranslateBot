@@ -1,8 +1,8 @@
 '''Category search Module'''
 
-from src.searchByCategory import searchByCategory
-from src.makeHTML import makeHTML
-from src.makeJPG import makeJPG
+from searchByCategory import searchByCategory
+from makeHTML import makeHTML
+from makeJPG import makeJPG
 
 def getOutputByCategory(TwitterID, category):
     Summary_list, ce, cj = searchByCategory(category)

@@ -14,7 +14,7 @@ class EigoyurusanBot():
         self.Twitter_ID = Twitter_ID
         self.SCREEN_NAME = SCREEN_NAME
 
-    
+
     def auto_tweet(self,lock):
         '''
         Automatically tweets the content of papers
@@ -24,10 +24,10 @@ class EigoyurusanBot():
         #Random search Module
         self.ret_cat, self.rlist = getOutputByRandom()
         self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
-                    +self.rlist[0][0]+self.rlist[0][1]'\n'\
-                    +self.rlist[1][0]+self.rlist[1][1]'\n'\
-                    +self.rlist[2][0]+self.rlist[2][1]'\n'\
-                    +self.rlist[3][0]+self.rlist[3][1]'\n'\
+                    +self.rlist[0][0]+self.rlist[0][1]+'\n'\
+                    +self.rlist[1][0]+self.rlist[1][1]+'\n'\
+                    +self.rlist[2][0]+self.rlist[2][1]+'\n'\
+                    +self.rlist[3][0]+self.rlist[3][1]+'\n'\
 
         #画像ファイルの取得
         self.auto_path = './images/auto/eigoyurusan''
@@ -71,16 +71,16 @@ class EigoyurusanBot():
                     self.inp = self.inp.replace('\n','')#改行は無視
 
                     #Keyword search Module
-                    self.ret_list = getOutputByKeyword(self.TwitterID, self.inp):
+                    self.ret_list = getOutputByKeyword(self.TwitterID, self.inp)
 
                     #ツイート本文
                     self.reply_text="@"+self.screen_name.decode()\
                                 +'検索キーワード -> '+self.inp+'\n'\
                                 +'検索結果\n'\
-                                +self.ret_list[0][0]+':'self.ret_list[0][1]'\n'\
-                                +self.ret_list[1][0]+':'self.ret_list[1][1]'\n'\
-                                +self.ret_list[2][0]+':'self.ret_list[2][1]'\n'\
-                                +self.ret_list[3][0]+':'self.ret_list[3][1]'\n'\
+                                +self.ret_list[0][0]+':'+self.ret_list[0][1]+'\n'\
+                                +self.ret_list[1][0]+':'+self.ret_list[1][1]+'\n'\
+                                +self.ret_list[2][0]+':'+self.ret_list[2][1]+'\n'\
+                                +self.ret_list[3][0]+':'+self.ret_list[3][1]+'\n'\
 
                     #画像ファイルの取得
                     self.path = './images/reply/'+self.screen_name.decode()#ファイルディレクトリ
