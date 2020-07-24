@@ -21,12 +21,11 @@ lang_button_path = {'RU':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/d
                     'DE':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[3]', # ドイツ
                     'EN':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[2]'} #  英語
 
-def traslateBydeepL(input_text, lang='JA', driver=None):
+def traslateBydeepL(input_text, lang='JA'):
     if input_text == '' or input_text == ' ' or input_text == '\n':
         return ''
 
-    if driver == None:
-        driver = get_driver()
+    driver = get_driver()
 
     # DeepLクエリ
     baseURL = "https://www.deepl.com/ja/translator"
@@ -53,11 +52,12 @@ def traslateBydeepL(input_text, lang='JA', driver=None):
     if len(input_text) < 1000:
         sleep(5)
     else:
-        sleep(8)
+        sleep(5)
 
     # 出力窓からテキスト抽出
     output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')
     for e in output_element:
         ret += e.get_attribute('value')
-
+    
+    driver.close()
     return ret

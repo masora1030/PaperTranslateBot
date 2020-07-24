@@ -8,46 +8,45 @@ import threading
 from getOutputByKeyword import *
 from getOutputByRandom import *
 
+import requests
+
+
 class EigoyurusanBot():
-    def __init__(self,api,Twitter_ID,SCREEN_NAME,driver,lock):
+    def __init__(self,api,Twitter_ID,SCREEN_NAME,lock):
         self.api = api
         self.Twitter_ID = Twitter_ID
         self.SCREEN_NAME = SCREEN_NAME
-        self.driver = driver
         self.lock = lock
-
-    def __del__(self):
-        self.driver.close()
-
 
     def auto_tweet(self):
         '''
         Automatically tweets the content of papers
         searched for in random categories
         '''
+        print("start auto tweet")
         self.lock.acquire()
         #Random search Module
-        self.ret_cat, self.rlist = getOutputByRandom(self.driver)
-        self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
-                    +self.rlist[0][0]+':'+self.rlist[0][1]+'\n'\
-                    +self.rlist[1][0]+':'+self.rlist[1][1]+'\n'\
-                    +self.rlist[2][0]+':'+self.rlist[2][1]+'\n'\
-                    +self.rlist[3][0]+':'+self.rlist[3][1]+'\n'
-        if len(self.text) > 140:
-            self.text = self.text[:140]
+        self.ret_cat, self.rlist = getOutputByRandom()
+        self.text = "["+self.ret_cat[1]+"]\n"
+        for self.i,self.r in enumerate(self.rlist):
+            self.text += '・'+self.r[0]+'... :'+self.r[1]+'\n'
 
+        print("get image files")
         #画像ファイルの取得
         self.auto_path = './images/auto/eigoyurusan/'
         self.auto_file_names = os.listdir(self.auto_path)
         self.auto_media_ids = []
 
-        for self.auto_filename in self.auto_file_names:
+        for self.auto_filename in sorted(self.auto_file_names):
             print(self.auto_filename)
             self.auto_res = self.api.media_upload(self.auto_path+self.auto_filename)
             self.auto_media_ids.append(self.auto_res.media_id)
+        print(len(self.text))
+        print(self.text)
         self.api.update_status(status = self.text,
                                 media_ids= self.auto_media_ids)
         self.lock.release()
+        print("end auto tweet")
 
 
     #この関数を10分ごとに回す
@@ -80,30 +79,27 @@ class EigoyurusanBot():
                     self.lock.acquire()#api変数,driverを使用するのでロック
 
                     #Keyword search Module
-                    self.ret_list = getOutputByKeyword(self.screen_name.decode(),self.inp,self.driver)
+                    self.ret_list = getOutputByKeyword(self.screen_name.decode(),self.inp)
 
                     #ツイート本文
-                    self.reply_text="@"+self.screen_name.decode()\
-                                +'検索キーワード -> '+self.inp+'\n'\
-                                +'検索結果\n'\
-                                +self.ret_list[0][0]+':'+self.ret_list[0][1]+'\n'\
-                                +self.ret_list[1][0]+':'+self.ret_list[1][1]+'\n'\
-                                +self.ret_list[2][0]+':'+self.ret_list[2][1]+'\n'\
-                                +self.ret_list[3][0]+':'+self.ret_list[3][1]+'\n'
+                    self.reply_text="@"+self.screen_name.decode()+'検索キーワード -> '+self.inp+'\n'+'検索結果\n'
+                    for self.j,self.rl in enumerate(self.ret_list):
+                        self.reply_text += '・'+self.rl[0]+'... :'+self.rl[1]+'\n'
 
-                    if len(self.reply_text) > 140:
-                        self.reply_text = self.reply_text[:140]
 
                     #画像ファイルの取得
                     self.path = './images/reply/'+self.screen_name.decode()#ファイルディレクトリ
                     self.file_names = os.listdir(self.path)#ファイルをリストで取得
                     self.media_ids = []
-                    for self.filename in self.file_names:
+                    for self.filename in sorted(self.file_names):
                         print(self.filename)
-                        self.res = self.api.media_upload(self.path+self.filename)
+                        self.res = self.api.media_upload(self.path+'/'+self.filename)
                         self.media_ids.append(self.res.media_id)#idリストへ追加
                     #ツイート
+                    print(len(self.reply_text))
+                    print(self.reply_text)
                     self.api.update_status(media_ids=self.media_ids,
                                             status=self.reply_text,
                                             in_reply_to_status_id=self.status_id)
                     self.lock.release()
+

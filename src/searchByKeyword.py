@@ -4,9 +4,9 @@ import re
 import random
 
 
-def searchByKeyword(input_str, driver=None):
+def searchByKeyword(input_str):
     if not (re.findall('^[a-zA-Z .\',!\?#]+$', input_str)):
-        input_str = traslateBydeepL(input_str, lang='EN', driver=driver)
+        input_str = traslateBydeepL(input_str, lang='EN')
     QUERY = "all:'{}'".format(input_str)
     result_list = arxiv.query(query=QUERY, max_results=100)
     resultlen = len(result_list)
@@ -30,13 +30,13 @@ def searchByKeyword(input_str, driver=None):
     for result in chosen_list:
         Summary = {}
         Summary['title_EN'] = result.title.replace("\n", " ")
-        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA', driver=driver)
+        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA')
         Summary['author'] = result.author
         Summary['pdf_url'] = result.pdf_url
         Summary['abs_url'] = result.arxiv_url
         Summary['date'] = result.updated[:10]
         Summary['abstract_EN'] = result.summary.replace("-\n", "").replace("\n", " ").replace(". ", ".\n")
-        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA', driver=driver)
+        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA')
 
         Summary_list.append(Summary)
     return Summary_list

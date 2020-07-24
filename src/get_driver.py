@@ -5,7 +5,7 @@ from selenium.webdriver.chrome.options import Options
 
 def get_driver():
     now_path = os.path.dirname(os.path.abspath(__file__))
-    driver_path = now_path + '/google-chrome'
+    driver_path = now_path + '/chromedriver'
 
     # 翻訳用ドライバーをheadless modeで開く
     options = Options()

@@ -32,16 +32,9 @@ if __name__ == '__main__':
     auth.set_access_token(AT, AS)
     api = tweepy.API(auth)
 
-
-    now_path = os.path.dirname(os.path.abspath(__file__))
-    driver_path = now_path + '/chromedriver'
-    #翻訳用ドライバーをheadless modeで開く
-    options = Options()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(driver_path, options=options)
     lock = threading.Lock()
 
-    bot = EigoyurusanBot(api,Twitter_ID,SCREEN_NAME,driver,lock)
+    bot = EigoyurusanBot(api,Twitter_ID,SCREEN_NAME,lock)
 
     #リプライ要のスレッド
     auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,))

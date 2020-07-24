@@ -5,7 +5,7 @@ from cat_list import cat_list
 import sys
 
 
-def searchByCategory(category, driver=None):
+def searchByCategory(category):
     num = -1
     for i, cat in enumerate(cat_list):
         if category == cat_list[0]:
@@ -37,13 +37,13 @@ def searchByCategory(category, driver=None):
     for result in chosen_list:
         Summary = {}
         Summary['title_EN'] = result.title.replace("\n", " ")
-        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA', driver=driver)
+        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA')
         Summary['author'] = result.author
         Summary['pdf_url'] = result.pdf_url
         Summary['abs_url'] = result.arxiv_url
         Summary['date'] = result.updated[:10]
         Summary['abstract_EN'] = result.summary.replace("-\n", "").replace("\n", " ").replace(". ", ".\n")
-        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA', driver=driver)
+        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA')
 
         Summary_list.append(Summary)
     return Summary_list, cat_list[num][1], cat_list[num][2]
