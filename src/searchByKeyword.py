@@ -7,7 +7,6 @@ import random
 def searchByKeyword(input_str):
     if not (re.findall('^[a-zA-Z .\',!\?#]+$', input_str)):
         input_str = traslateBydeepL(input_str, lang='EN')
-    print(input_str)
     QUERY = "all:'{}'".format(input_str)
     result_list = arxiv.query(query=QUERY, max_results=100)
     resultlen = len(result_list)
