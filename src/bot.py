@@ -9,20 +9,25 @@ from getOutputByKeyword import *
 from getOutputByRandom import *
 
 class EigoyurusanBot():
-    def __init__(self,api,Twitter_ID,SCREEN_NAME):
+    def __init__(self,api,Twitter_ID,SCREEN_NAME,driver,lock):
         self.api = api
         self.Twitter_ID = Twitter_ID
         self.SCREEN_NAME = SCREEN_NAME
+        self.driver = driver
+        sef.lock = lock
+
+    def __del__(self):
+        self.driver.close()
 
 
-    def auto_tweet(self,lock,driver):
+    def auto_tweet(self):
         '''
         Automatically tweets the content of papers
         searched for in random categories
         '''
-        lock.acquire()
+        self.lock.acquire()
         #Random search Module
-        self.ret_cat, self.rlist = getOutputByRandom(driver)
+        self.ret_cat, self.rlist = getOutputByRandom(self.driver)
         self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
                     +self.rlist[0][0]+':'+self.rlist[0][1]+'\n'\
                     +self.rlist[1][0]+':'+self.rlist[1][1]+'\n'\
@@ -42,11 +47,11 @@ class EigoyurusanBot():
             self.auto_media_ids.append(self.auto_res.media_id)
         self.api.update_status(status = self.text,
                                 media_ids= self.auto_media_ids)
-        lock.release()
+        self.lock.release()
 
 
     #この関数を10分ごとに回す
-    def reply(self,lock,driver):
+    def reply(self):
         '''
         Get 200 replies to yourself in a tweet on
         the timeline and tweet an image of the
@@ -72,10 +77,10 @@ class EigoyurusanBot():
                     self.inp = self.status.text.lstrip("@"+self.Twitter_ID)#本文の余計な部分を削除
                     self.inp = self.inp.replace('\n','')#改行は無視
 
-                    lock.acquire()#api変数,driverを使用するのでロック
+                    self.ock.acquire()#api変数,driverを使用するのでロック
 
                     #Keyword search Module
-                    self.ret_list = getOutputByKeyword(self.screen_name.decode(), self.inp)
+                    self.ret_list = getOutputByKeyword(self.screen_name.decode(),self.inp,self.driver)
 
                     #ツイート本文
                     self.reply_text="@"+self.screen_name.decode()\
@@ -101,4 +106,4 @@ class EigoyurusanBot():
                     self.api.update_status(media_ids=self.media_ids,
                                             status=self.reply_text,
                                             in_reply_to_status_id=self.status_id)
-                    lock.release()
+                    self.lock.release()
