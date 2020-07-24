@@ -22,7 +22,7 @@ class EigoyurusanBot():
         '''
         lock.acquire()
         #Random search Module
-        self.ret_cat, self.rlist = getOutputByRandom()
+        self.ret_cat, self.rlist = getOutputByRandom(driver)
         self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
                     +self.rlist[0][0]+':'+self.rlist[0][1]+'\n'\
                     +self.rlist[1][0]+':'+self.rlist[1][1]+'\n'\
