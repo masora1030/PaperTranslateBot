@@ -34,7 +34,7 @@ if __name__ == '__main__':
 
 
     now_path = os.path.dirname(os.path.abspath(__file__))
-    driver_path = now_path + '/google-chrome'
+    driver_path = now_path + '/chromedriver'
     #翻訳用ドライバーをheadless modeで開く
     options = Options()
     options.add_argument('--headless')
@@ -44,8 +44,8 @@ if __name__ == '__main__':
     bot = EigoyurusanBot(api,Twitter_ID,SCREEN_NAME,driver,lock)
 
     #リプライ要のスレッド
-    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot))
+    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,))
     #自動ツイート用のスレッド
-    auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot))
+    auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot,))
     auto_reply_thread.start()
     auto_tweet_thread.start()

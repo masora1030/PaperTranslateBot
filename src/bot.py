@@ -14,7 +14,7 @@ class EigoyurusanBot():
         self.Twitter_ID = Twitter_ID
         self.SCREEN_NAME = SCREEN_NAME
         self.driver = driver
-        sef.lock = lock
+        self.lock = lock
 
     def __del__(self):
         self.driver.close()
@@ -37,7 +37,7 @@ class EigoyurusanBot():
             self.text = self.text[:140]
 
         #画像ファイルの取得
-        self.auto_path = './images/auto/eigoyurusan'
+        self.auto_path = './images/auto/eigoyurusan/'
         self.auto_file_names = os.listdir(self.auto_path)
         self.auto_media_ids = []
 
@@ -77,7 +77,7 @@ class EigoyurusanBot():
                     self.inp = self.status.text.lstrip("@"+self.Twitter_ID)#本文の余計な部分を削除
                     self.inp = self.inp.replace('\n','')#改行は無視
 
-                    self.ock.acquire()#api変数,driverを使用するのでロック
+                    self.lock.acquire()#api変数,driverを使用するのでロック
 
                     #Keyword search Module
                     self.ret_list = getOutputByKeyword(self.screen_name.decode(),self.inp,self.driver)
