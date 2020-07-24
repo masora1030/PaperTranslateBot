@@ -4,8 +4,8 @@ from searchByKeyword import searchByKeyword
 from makeHTML import makeHTML
 from makeJPG import makeJPG
 
-def getOutputByKeyword(TwitterID, keyward):
-    Summary_list = searchByKeyword(keyward)
+def getOutputByKeyword(TwitterID, keyward, driver=None):
+    Summary_list = searchByKeyword(keyward, driver)
     HTML_list = makeHTML(Summary_list)
     makeJPG(HTML_list, TwitterID, path='reply')
     count = 0

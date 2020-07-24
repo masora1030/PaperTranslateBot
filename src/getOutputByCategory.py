@@ -4,8 +4,8 @@ from searchByCategory import searchByCategory
 from makeHTML import makeHTML
 from makeJPG import makeJPG
 
-def getOutputByCategory(TwitterID, category):
-    Summary_list, ce, cj = searchByCategory(category)
+def getOutputByCategory(TwitterID, category, driver=None):
+    Summary_list, ce, cj = searchByCategory(category, driver)
     ret_cat = [ce, cj]
     HTML_list = makeHTML(Summary_list)
     makeJPG(HTML_list, TwitterID, path='register')

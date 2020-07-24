@@ -5,6 +5,8 @@ import os
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
+from makeJPG import makeJPG
+from get_driver import get_driver
 
 now_path = os.path.dirname(os.path.abspath(__file__))
 driver_path = now_path + '/google-chrome'
@@ -19,14 +21,12 @@ lang_button_path = {'RU':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/d
                     'DE':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[3]', # ドイツ
                     'EN':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[2]'} #  英語
 
-def traslateBydeepL(input_text, lang='JA'):
+def traslateBydeepL(input_text, lang='JA', driver=None):
     if input_text == '' or input_text == ' ' or input_text == '\n':
         return ''
 
-    # 翻訳用ドライバーをheadless modeで開く
-    options = Options()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(driver_path, options=options)
+    if driver == None:
+        driver = get_driver()
 
     # DeepLクエリ
     baseURL = "https://www.deepl.com/ja/translator"
@@ -59,8 +59,5 @@ def traslateBydeepL(input_text, lang='JA'):
     output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')
     for e in output_element:
         ret += e.get_attribute('value')
-
-    # 翻訳用ドライバー閉じる
-    driver.close()
 
     return ret

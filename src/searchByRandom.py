@@ -4,7 +4,7 @@ from translate import traslateBydeepL
 from cat_list import cat_list
 
 
-def searchByRandom():
+def searchByRandom(driver=None):
     num = int(random.random() * len(cat_list) + 1)
     if num >= len(cat_list):
         num = len(cat_list) - 1
@@ -31,13 +31,13 @@ def searchByRandom():
     for result in chosen_list:
         Summary = {}
         Summary['title_EN'] = result.title.replace("\n", " ")
-        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA')
+        Summary['title_JP'] = traslateBydeepL(Summary['title_EN'], lang='JA', driver)
         Summary['author'] = result.author
         Summary['pdf_url'] = result.pdf_url
         Summary['abs_url'] = result.arxiv_url
         Summary['date'] = result.updated[:10]
         Summary['abstract_EN'] = result.summary.replace("-\n", "").replace("\n", " ").replace(". ", ".\n")
-        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA')
+        Summary['abstract_JP'] = traslateBydeepL(Summary['abstract_EN'], lang='JA', driver)
 
         Summary_list.append(Summary)
     return Summary_list, cat_list[num][1], cat_list[num][2]

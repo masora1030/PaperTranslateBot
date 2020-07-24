@@ -4,9 +4,9 @@ from searchByRandom import searchByRandom
 from makeHTML import makeHTML
 from makeJPG import makeJPG
 
-def getOutputByRandom():
+def getOutputByRandom(driver=None):
     TwitterID = 'eigoyurusan'
-    Summary_list, ce, cj = searchByRandom()
+    Summary_list, ce, cj = searchByRandom(driver)
     ret_cat = [ce, cj]
     HTML_list = makeHTML(Summary_list)
     makeJPG(HTML_list, TwitterID, path='auto')
