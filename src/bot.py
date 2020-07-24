@@ -15,19 +15,19 @@ class EigoyurusanBot():
         self.SCREEN_NAME = SCREEN_NAME
 
 
-    def auto_tweet(self,lock):
+    def auto_tweet(self,lock,driver):
         '''
         Automatically tweets the content of papers
         searched for in random categories
         '''
-
+        lock.acquire()
         #Random search Module
         self.ret_cat, self.rlist = getOutputByRandom()
         self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
                     +self.rlist[0][0]+':'+self.rlist[0][1]+'\n'\
                     +self.rlist[1][0]+':'+self.rlist[1][1]+'\n'\
                     +self.rlist[2][0]+':'+self.rlist[2][1]+'\n'\
-                    +self.rlist[3][0]+':'+self.rlist[3][1]+'\n'\
+                    +self.rlist[3][0]+':'+self.rlist[3][1]+'\n'
         if len(self.text) > 140:
             self.text = self.text[:140]
 
@@ -35,7 +35,7 @@ class EigoyurusanBot():
         self.auto_path = './images/auto/eigoyurusan'
         self.auto_file_names = os.listdir(self.auto_path)
         self.auto_media_ids = []
-        lock.acquire()
+
         for self.auto_filename in self.auto_file_names:
             print(self.auto_filename)
             self.auto_res = self.api.media_upload(self.auto_path+self.auto_filename)
@@ -46,7 +46,7 @@ class EigoyurusanBot():
 
 
     #この関数を10分ごとに回す
-    def reply(self,lock):
+    def reply(self,lock,driver):
         '''
         Get 200 replies to yourself in a tweet on
         the timeline and tweet an image of the
@@ -72,8 +72,10 @@ class EigoyurusanBot():
                     self.inp = self.status.text.lstrip("@"+self.Twitter_ID)#本文の余計な部分を削除
                     self.inp = self.inp.replace('\n','')#改行は無視
 
+                    lock.acquire()#api変数,driverを使用するのでロック
+
                     #Keyword search Module
-                    self.ret_list = getOutputByKeyword(self.Twitter_ID, self.inp)
+                    self.ret_list = getOutputByKeyword(self.screen_name.decode(), self.inp)
 
                     #ツイート本文
                     self.reply_text="@"+self.screen_name.decode()\
@@ -82,7 +84,7 @@ class EigoyurusanBot():
                                 +self.ret_list[0][0]+':'+self.ret_list[0][1]+'\n'\
                                 +self.ret_list[1][0]+':'+self.ret_list[1][1]+'\n'\
                                 +self.ret_list[2][0]+':'+self.ret_list[2][1]+'\n'\
-                                +self.ret_list[3][0]+':'+self.ret_list[3][1]+'\n'\
+                                +self.ret_list[3][0]+':'+self.ret_list[3][1]+'\n'
 
                     if len(self.reply_text) > 140:
                         self.reply_text = self.reply_text[:140]
@@ -91,8 +93,6 @@ class EigoyurusanBot():
                     self.path = './images/reply/'+self.screen_name.decode()#ファイルディレクトリ
                     self.file_names = os.listdir(self.path)#ファイルをリストで取得
                     self.media_ids = []
-
-                    lock.acquire()#api変数を使用するのでロック
                     for self.filename in self.file_names:
                         print(self.filename)
                         self.res = self.api.media_upload(self.path+self.filename)
