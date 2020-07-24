@@ -30,7 +30,7 @@ class EigoyurusanBot():
                     +self.rlist[3][0]+self.rlist[3][1]+'\n'\
 
         #画像ファイルの取得
-        self.auto_path = './images/auto/eigoyurusan''
+        self.auto_path = './images/auto/eigoyurusan'
         self.auto_file_names = os.listdir(self.auto_path)
         self.auto_media_ids = []
         lock.acquire()
@@ -71,7 +71,7 @@ class EigoyurusanBot():
                     self.inp = self.inp.replace('\n','')#改行は無視
 
                     #Keyword search Module
-                    self.ret_list = getOutputByKeyword(self.TwitterID, self.inp)
+                    self.ret_list = getOutputByKeyword(self.Twitter_ID, self.inp)
 
                     #ツイート本文
                     self.reply_text="@"+self.screen_name.decode()\

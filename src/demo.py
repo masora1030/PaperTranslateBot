@@ -14,13 +14,13 @@ def auto_reply(bot, lock):
     logging.debug('function of auto reply start')
     while True:
         bot.reply(lock)
-        time.sleep(60)
+        time.sleep(600)
 
 def auto_tweets(bot,lock):
     logging.debug('function of auto tweets start')
     while True:
-        bot.reply(lock)
-        time.sleep(600)
+        bot.auto_tweet(lock)
+        time.sleep(1000)
 
 
 
