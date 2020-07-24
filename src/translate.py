@@ -52,7 +52,7 @@ def traslateBydeepL(input_text, lang='JA'):
     if len(input_text) < 1000:
         sleep(5)
     else:
-        sleep(5)
+        sleep(10)
 
     # 出力窓からテキスト抽出
     output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')

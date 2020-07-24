@@ -29,7 +29,11 @@ class EigoyurusanBot():
         self.ret_cat, self.rlist = getOutputByRandom()
         self.text = "["+self.ret_cat[1]+"]\n"
         for self.i,self.r in enumerate(self.rlist):
-            self.text += '・'+self.r[0]+'... :'+self.r[1]+'\n'
+            self.text += '・'+self.r[0]
+            if len(self.r[0])>20:
+                self.text += '... :'+self.r[1]+'\n'
+            else:
+                self.text += ':'+self.r[1]+'\n'
 
         print("get image files")
         #画像ファイルの取得
@@ -84,7 +88,11 @@ class EigoyurusanBot():
                     #ツイート本文
                     self.reply_text="@"+self.screen_name.decode()+'検索キーワード -> '+self.inp+'\n'+'検索結果\n'
                     for self.j,self.rl in enumerate(self.ret_list):
-                        self.reply_text += '・'+self.rl[0]+'... :'+self.rl[1]+'\n'
+                        self.reply_text += '・'+self.rl[0]
+                        if len(self.rl[0])>20:
+                            self.reply_text += '... :'+self.rl[1]+'\n'
+                        else:
+                            self.reply_text += ':'+self.rl[1]+'\n'
 
 
                     #画像ファイルの取得
