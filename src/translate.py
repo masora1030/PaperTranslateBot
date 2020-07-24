@@ -6,7 +6,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
 
-driver_path = '/google-chrome'
+now_path = os.path.dirname(os.path.abspath(__file__))
+driver_path = now_path + '/google-chrome'
 
 lang_button_path = {'RU':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[11]', # ロシア
                     'PL':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[10]', # ポーランド
