@@ -24,10 +24,12 @@ class EigoyurusanBot():
         #Random search Module
         self.ret_cat, self.rlist = getOutputByRandom()
         self.text = "Category : "+self.ret_cat[0]+'('+self.ret_cat[1]+")\n"\
-                    +self.rlist[0][0]+self.rlist[0][1]+'\n'\
-                    +self.rlist[1][0]+self.rlist[1][1]+'\n'\
-                    +self.rlist[2][0]+self.rlist[2][1]+'\n'\
-                    +self.rlist[3][0]+self.rlist[3][1]+'\n'\
+                    +self.rlist[0][0]+':'+self.rlist[0][1]+'\n'\
+                    +self.rlist[1][0]+':'+self.rlist[1][1]+'\n'\
+                    +self.rlist[2][0]+':'+self.rlist[2][1]+'\n'\
+                    +self.rlist[3][0]+':'+self.rlist[3][1]+'\n'\
+        if len(self.text) > 140:
+            self.text = self.text[:140]
 
         #画像ファイルの取得
         self.auto_path = './images/auto/eigoyurusan'
@@ -81,6 +83,9 @@ class EigoyurusanBot():
                                 +self.ret_list[1][0]+':'+self.ret_list[1][1]+'\n'\
                                 +self.ret_list[2][0]+':'+self.ret_list[2][1]+'\n'\
                                 +self.ret_list[3][0]+':'+self.ret_list[3][1]+'\n'\
+
+                    if len(self.reply_text) > 140:
+                        self.reply_text = self.reply_text[:140]
 
                     #画像ファイルの取得
                     self.path = './images/reply/'+self.screen_name.decode()#ファイルディレクトリ
