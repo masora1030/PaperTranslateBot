@@ -49,9 +49,9 @@ if __name__ == '__main__':
     bot = EigoyurusanBot(api,Twitter_ID,SCREEN_NAME,lock)
     
     #リプライ要のスレッド
-    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,10*60,0))
+    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,10*60))
     #自動ツイート用のスレッド
-    auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot,60*60,0))
+    auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot,60*60))
     
     auto_reply_thread.start()
     auto_tweet_thread.start()
