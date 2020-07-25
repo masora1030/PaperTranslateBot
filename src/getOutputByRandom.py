@@ -14,6 +14,6 @@ def getOutputByRandom():
     ret_list = []
     for result in Summary_list:
         count += 1
-        ret = [result['title_JP'][:min(len(result['title_JP']), 20)], result['abs_url']]
+        ret = [result['title_JP'], result['abs_url']]
         ret_list.append(ret)
     return ret_cat, ret_list

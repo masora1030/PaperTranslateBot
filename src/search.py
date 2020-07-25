@@ -6,7 +6,7 @@ def search_random(query):
 
     def get_randomdate(year):
         startdate = datetime.datetime(year, 1, 1).timestamp()
-        enddate = int(datetime.datetime.now().timestamp())
+        enddate = int(datetime.datetime.now().timestamp())-1000000
         start = datetime.datetime.fromtimestamp(random.randint(startdate,enddate)).strftime('%Y%m%d')
         end = start+"235959"
         return start, end
