@@ -10,6 +10,6 @@ sudo apt -f install -y
 sudo apt install python3-selenium
 sudo apt install unzip
 wget https://ipafont.ipa.go.jp/IPAexfont/IPAexfont00401.zip
-unzip IPAexfont00401.zip -d ~/.fonts/
+unzip IPAexfont00401.zip -d /home/ubuntu/.fonts/
 fc-cache -fv
-pip3 install imgkit arxiv markdown
+pip3 install imgkit arxiv markdown tweepy emoji
