@@ -4,7 +4,7 @@ from bot import *
 import time, datetime
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-
+import emoji
 import logging
 import threading
 
@@ -22,7 +22,9 @@ def auto_reply(bot, interval, initsleep=None):
     print(f"[auto reply] started at {datetime.datetime.now()}")
     while True:
         try: bot.reply()
-        except Exception as e: print(e) 
+        except Exception as e: 
+            print("exception at auto_reply function")
+            print(e) 
         time.sleep(interval)
 
 def auto_tweets(bot, interval, initsleep=None):
@@ -35,7 +37,9 @@ def auto_tweets(bot, interval, initsleep=None):
     print(f"[auto tweet] started at {datetime.datetime.now()}")
     while True:
         try: bot.auto_tweet()
-        except Exception as e: print(e)
+        except Exception as e:
+            print("exception at auto_tweets function")
+            print(e)
         time.sleep(interval)
 
 def auto_follows(bot, interval, initsleep=None):
@@ -47,7 +51,9 @@ def auto_follows(bot, interval, initsleep=None):
     print(f"[auto follow] started at {datetime.datetime.now()}")
     while True:
         try: bot.auto_follow()
-        except Exception as e: print(e)
+        except Exception as e: 
+            print("exception at auto_follows function")
+            print(e)
         time.sleep(interval)
 
 

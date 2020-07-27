@@ -7,7 +7,9 @@ import threading
 
 from getOutputByKeyword import *
 from getOutputByRandom import *
-
+import os
+import shutil
+import emoji
 import requests
 
 
@@ -17,7 +19,10 @@ class EigoyurusanBot():
         self.Twitter_ID = Twitter_ID
         self.SCREEN_NAME = SCREEN_NAME
         self.lock = lock
-        self.last_rep = ''
+        if os.path.exists('last_rep'):
+            with open('last_rep') as f:
+                self.last_rep = f.readline().rstrip()
+        else: self.last_rep = ''
 
     def auto_follow(self):
         #新しい方から順番に20人取ってくる
@@ -58,6 +63,9 @@ class EigoyurusanBot():
         print(len(text))
         print(text)
         self.api.update_status(status=text, media_ids=auto_media_ids)
+        #画像ファイルの削除
+        for auto_filename in sorted(auto_file_names)[:len(rlist)]:
+            os.remove(auto_path + auto_filename)
         self.lock.release()
         print("end auto tweet")
 
@@ -70,7 +78,7 @@ class EigoyurusanBot():
         resulting translation.
         '''
         if self.last_rep == '':
-            timeline = self.api.mentions_timeline(count=1)
+            timeline = self.api.mentions_timeline(count=30)
         else:
             timeline = self.api.mentions_timeline(count=200, since_id=self.last_rep)
         #その時のタイクラインの状況を取ってくる
@@ -78,21 +86,40 @@ class EigoyurusanBot():
             print("reply tweets doesn't exist.")
             return
         
-        self.last_rep = timeline[0].id
-        for status in timeline:
+        timeline = [status for status in timeline if len(status.entities["user_mentions"])==1]
+        for status in reversed(timeline):
+            try: self.api.create_favorite(status.id)
+            except: pass
+            print(status.id)
+
+        for status in reversed(timeline):
             screen_name = status.author.screen_name
             if status.author.id not in set([f.id for f in self.api.friends()]):
-                self.api.create_friendship(status.author.id)
+                try: self.api.create_friendship(status.author.id)
+                except: pass
             #inpが相手の返信内容
             keywords = status.text.lstrip("@"+self.Twitter_ID).replace('\n','')#本文の余計な部分を削除
+            keywords = "".join([c for c in keywords if c not in emoji.UNICODE_EMOJI])
             print(f"keywords {keywords} are sent by {screen_name}")
             #Keyword search Module
-            ret_list = getOutputByKeyword(screen_name, keywords)
-            if len(ret_list)==0: continue
+            ret_list, t_keyword = getOutputByKeyword(screen_name, keywords)
+            if len(ret_list)==0: 
+                print(f"no retlist, {t_keyword}")
+                try:
+                    self.api.update_status(status=f"@{screen_name}\n sorry no result for {t_keyword}", in_reply_to_status_id=status.id)
+                    self.last_rep = status.id
+                    with open('last_rep','w') as f: f.write(f"{status.id}")
+                except Exception as e: 
+                    print("exception occured when sorry no result")
+                    print(e)
+                continue
             #ツイート本文
             #self.reply_text="@"+self.screen_name.decode()+'検索キーワード -> '+self.inp+'\n'+'検索結果\n'
-            length = int((280-len("\n".join([screen_name]+[f":{url}" for _,url in ret_list])))/2/4)
-            texts = [f"@{screen_name}"]
+            prefix = f"@{screen_name}"
+            if t_keyword != keywords:
+                prefix += f" :{t_keyword}" if len(t_keyword)<40 else f" :{t_keyword[:37]}..."
+            length = int((280-len("\n".join([prefix]+[f":{url}" for _,url in ret_list])))/2/4)
+            texts = [prefix]
             texts.extend([f">{title[:length-3]+'...' if len(title)>length else title}:{url}" for title,url in ret_list])
              
             self.lock.acquire()#api変数
@@ -109,5 +136,8 @@ class EigoyurusanBot():
             print(len(text))
             print(text)
             self.api.update_status(media_ids=media_ids, status=text, in_reply_to_status_id=status.id)
+            shutil.rmtree(path)#画像ファイル、ディレクトリの削除
             self.lock.release()
+            self.last_rep = status.id
+            with open('last_rep','w') as f: f.write(f"{status.id}")
 

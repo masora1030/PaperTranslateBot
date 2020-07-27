@@ -8,4 +8,4 @@ def searchByKeyword(input_str):
         input_str = traslateBydeepL(input_str, lang='EN')
     query = "all:'{}'".format(input_str)
     
-    return search_random(query)
+    return search_random(query), input_str

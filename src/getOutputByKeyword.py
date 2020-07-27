@@ -5,7 +5,7 @@ from makeHTML import makeHTML
 from makeJPG import makeJPG
 
 def getOutputByKeyword(TwitterID, keyward):
-    Summary_list = searchByKeyword(keyward)
+    Summary_list, t_keyword = searchByKeyword(keyward)
     HTML_list = makeHTML(Summary_list)
     makeJPG(HTML_list, TwitterID, path='reply')
     count = 0
@@ -14,4 +14,4 @@ def getOutputByKeyword(TwitterID, keyward):
         count += 1
         ret = [result['title_JP'], result['abs_url']]
         ret_list.append(ret)
-    return ret_list
+    return ret_list, t_keyword

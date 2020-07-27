@@ -21,7 +21,7 @@ lang_button_path = {'RU':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/d
                     'DE':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[3]', # ドイツ
                     'EN':'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[2]'} #  英語
 
-def traslateBydeepL(input_text, lang='JA'):
+def traslateBydeepL(input_text, lang='JA', force_to_en=False):
     if input_text == '' or input_text == ' ' or input_text == '\n':
         return ''
 
@@ -34,30 +34,39 @@ def traslateBydeepL(input_text, lang='JA'):
 
     # DeepLクエリ送信
     driver.get(baseURL)
-
+    
+    if force_to_en:
+        input_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[3]/div[2]/div[1]/textarea')
+        input_element[0].send_keys(input_text)
+        sleep(5 if len(input_text) < 1000 else 10)
+        driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/button')[0].click()
+        for i in range(1,12):
+            lang = driver.find_elements_by_xpath(f'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[{i}]')[0].text
+            print(lang)
     # 多言語対応
-    if lang != 'JA':
-        choice_button = \
-        driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/button')[0]
-        choice_button.click()
-        sleep(1)
-        lang_button = driver.find_elements_by_xpath(lang_button_path[lang])[0]
-        lang_button.click()
-
-    # 入力窓にテキスト送信
-    input_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[3]/div[2]/div[1]/textarea')
-    input_element[0].send_keys(input_text)
-
-    # 読み込み待ち
-    if len(input_text) < 1000:
-        sleep(5)
     else:
-        sleep(10)
+        if lang != 'JA':
+            choice_button = \
+            driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/button')[0]
+            choice_button.click()
+            sleep(1)
+            lang_button = driver.find_elements_by_xpath(lang_button_path[lang])[0]
+            lang_button.click()
 
-    # 出力窓からテキスト抽出
-    output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')
-    for e in output_element:
-        ret += e.get_attribute('value')
+        # 入力窓にテキスト送信
+        input_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[3]/div[2]/div[1]/textarea')
+        input_element[0].send_keys(input_text)
+
+        # 読み込み待ち
+        if len(input_text) < 1000:
+            sleep(5)
+        else:
+            sleep(10)
+
+        # 出力窓からテキスト抽出
+        output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')
+        for e in output_element:
+            ret += e.get_attribute('value')
     
     driver.close()
     return ret
