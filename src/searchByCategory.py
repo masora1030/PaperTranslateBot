@@ -1,7 +1,7 @@
 import random
 from cat_list import cat_list
 import sys
-from search import search_random
+from search import search_n_random
 
 def searchByCategory(category):
     num = -1
@@ -14,4 +14,4 @@ def searchByCategory(category):
         sys.exit(1)
     query = "cat:'{}'".format(cat_list[num][0])
 
-    return search_random(query), cat_list[num][1], cat_list[num][2]
+    return search_n_random(query,10), cat_list[num][1], cat_list[num][2]

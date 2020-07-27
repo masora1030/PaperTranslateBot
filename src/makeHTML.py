@@ -28,7 +28,8 @@ def makeHTML(Summary_list):
         md = markdown.Markdown(extensions=['admonition', 'footnotes'])
         body = md.convert(mdtext)
         html = '<html lang="ja"><meta charset="utf-8"><body>'
-        html += (body + '</body></html>')
+        html += body
+        html += '</body></html>'
         retHTML.append(html)
 
     return retHTML

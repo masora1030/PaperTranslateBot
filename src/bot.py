@@ -19,6 +19,18 @@ class EigoyurusanBot():
         self.lock = lock
         self.last_rep = ''
 
+    def auto_follow(self):
+        #新しい方から順番に20人取ってくる
+        self.lock.acquire()
+        followers = set([f.id for f in self.api.followers() if not f.follow_request_sent]) #count = 20
+        friends = set([f.id for f in self.api.friends()])
+        new = followers - friends
+        if new: print("new followers", new)
+        for n in new:
+            self.api.create_friendship(n) #指定したidのuserをフォロー
+            time.sleep(20)
+        self.lock.release()
+
     def auto_tweet(self):
         '''
         Automatically tweets the content of papers
@@ -58,7 +70,7 @@ class EigoyurusanBot():
         resulting translation.
         '''
         if self.last_rep == '':
-            timeline = self.api.mentions_timeline(count=10)
+            timeline = self.api.mentions_timeline(count=1)
         else:
             timeline = self.api.mentions_timeline(count=200, since_id=self.last_rep)
         #その時のタイクラインの状況を取ってくる
@@ -69,9 +81,11 @@ class EigoyurusanBot():
         self.last_rep = timeline[0].id
         for status in timeline:
             screen_name = status.author.screen_name
+            if status.author.id not in set([f.id for f in self.api.friends()]):
+                self.api.create_friendship(status.author.id)
             #inpが相手の返信内容
             keywords = status.text.lstrip("@"+self.Twitter_ID).replace('\n','')#本文の余計な部分を削除
-
+            print(f"keywords {keywords} are sent by {screen_name}")
             #Keyword search Module
             ret_list = getOutputByKeyword(screen_name, keywords)
             if len(ret_list)==0: continue
