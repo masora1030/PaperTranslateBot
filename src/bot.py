@@ -47,9 +47,9 @@ class EigoyurusanBot():
         ret_cat, rlist = getOutputByRandom()
 
         length = int((280-len("\n".join([ret_cat[1]]+[f":{url}" for _,url in rlist])))/2/4)
-        texts = [f"{ret_cat[1]}"]
+        texts = [f"#英許_{ret_cat[1]}"]
         texts.extend([f">{title[:length-3]+'...' if len(title)>length else title}:{url}" for title,url in rlist])
-        
+
         print("get image files")
         #画像ファイルの取得
         auto_path = './images/auto/eigoyurusan/'
@@ -118,10 +118,12 @@ class EigoyurusanBot():
             prefix = f"@{screen_name}"
             if t_keyword != keywords:
                 prefix += f" :{t_keyword}" if len(t_keyword)<40 else f" :{t_keyword[:37]}..."
+            if ret_list[0][0] == '':
+                prefix += "\n英弱発揮したすまん(時間をおいて再度お試しください)"
             length = int((280-len("\n".join([prefix]+[f":{url}" for _,url in ret_list])))/2/4)
             texts = [prefix]
             texts.extend([f">{title[:length-3]+'...' if len(title)>length else title}:{url}" for title,url in ret_list])
-             
+
             self.lock.acquire()#api変数
             
             #画像ファイルの取得

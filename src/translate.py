@@ -40,9 +40,18 @@ def traslateBydeepL(input_text, lang='JA', force_to_en=False):
         input_element[0].send_keys(input_text)
         sleep(5 if len(input_text) < 1000 else 10)
         driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/button')[0].click()
-        for i in range(1,12):
-            lang = driver.find_elements_by_xpath(f'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[{i}]')[0].text
-            print(lang)
+        sleep(1)
+        eng = [i for i in range(1,12) if driver.find_elements_by_xpath(f'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[{i}]')[0].text == "英語"]
+        if len(eng) == 0: 
+            driver.close()
+            return input_text
+        else:
+            driver.find_elements_by_xpath(f'//*[@id="dl_translator"]/div[1]/div[4]/div[1]/div[1]/div[1]/div/button[{eng[0]}]')[0].click()
+            sleep(5 if len(input_text) < 1000 else 10)
+            output_element = driver.find_elements_by_xpath('//*[@id="dl_translator"]/div[1]/div[4]/div[3]/div[1]/textarea')
+            ret = "".join([e.get_attribute('value') for e in output_element])
+            driver.close()
+            return ret
     # 多言語対応
     else:
         if lang != 'JA':

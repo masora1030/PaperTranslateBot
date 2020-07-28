@@ -8,11 +8,11 @@ def search_random(query):
         startdate = datetime.datetime(year, 1, 1).timestamp()
         enddate = int(datetime.datetime.now().timestamp())-1000000
         start = datetime.datetime.fromtimestamp(random.randint(startdate,enddate)).strftime('%Y%m%d')
-        end = start+"235959"
+        end = (datetime.date.today()-datetime.timedelta(days=2)).strftime('%Y%m%d')+"235959"
         return start, end
 
     results = []
-    for i in range(10):
+    for i in range(100):
         start, end = get_randomdate(2019 if i<=2 else 2010)
         query_ = f"{query} AND submittedDate:[{start} TO {end}]"
         ret = arxiv.query(query=query_, max_results=1)
@@ -35,8 +35,8 @@ def shaping(results):
                 "pdf_url":  res.pdf_url.replace('http://',''),
                 "abs_url":  res.arxiv_url.replace('http://',''),
                 "date":     res.updated[:10],
-                "abstract_EN": res.summary.replace('-\n',"").replace("\n"," ").replace(". ",".\n"),
-                "abstract_JP": traslateBydeepL(res.summary.replace('\n',' '), lang="JA")
+                "abstract_EN": res.summary.replace("-\n", "").replace("\n", " ").replace(". ", ".\n").replace("$", ""),
+                "abstract_JP": traslateBydeepL(res.summary.replace("-\n", "").replace("\n", " ").replace(". ", ".\n").replace("$", ""), lang="JA")
             }
             for res in results
         ]
