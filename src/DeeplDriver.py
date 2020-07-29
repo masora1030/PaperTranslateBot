@@ -74,7 +74,9 @@ class DeeplDriver:
         while self.is_busy(): time.sleep(0.1)
 
     def detect_lang(self, text):
-        self._find(self.source_textarea)[0].send_keys(text)
+        textarea = self._find(self.source_textarea)[0]
+        textarea.clear()
+        textarea.send_keys(text)
         self.wait_translate()
         return self._find(f'{self.source_lang_button}/span/strong')[0].text
 
