@@ -1,30 +1,37 @@
 from selenium import webdriver
 from selenium.webdriver.chrome import options, service
-import time, os, random
-import shutil, queue
+import time, os, random, shutil, queue, threading
 
 class Translate:
     def __init__(self):
         self.dDriver = DeeplDriver()
         self.queue = queue.Queue()
         self.results = {}
+        threading.Thread(target=self.process).start()
+
+    def __call__(self, text, **kwargs):
+        kwargs['text'] = text
+        id_ = self.put(**kwargs)
+        return self.get(id_)
 
     def put(self, **kwargs):
-        id_ = time.time() + random.randint(0,100)
-        self.queue.put(id_=id_, **kwargs)
+        id_ = str(int(time.time()*100000000))+str(random.randint(0,99))
+        kwargs["id_"] = id_
+        self.queue.put(kwargs)
         return id_
 
     def get(self, id_):
-        while not self.results[id_]:
-            time.sleep(0.1)
+        while id_ not in self.results.keys():
+            time.sleep(1)
         res = self.results[id_]
+        del self.results[id_]
         return res
 
     def process(self):
         while True:
             obj = self.queue.get()
-            id_ = obj
-            print(f'processing {id_}')
+            id_ = obj['id_']
+            print(f'processing translate {id_}')
             del obj['id_']
             res = self.dDriver.translate(**obj)
             self.results[id_] = res
@@ -32,11 +39,9 @@ class Translate:
 class DeeplDriver:
     def __init__(self):
         options_ = options.Options()
-        # options_.add_argument('--headless')
         options_.headless = True
-        # if not shutil.which("chromedriver"): raise Exception('please install chromedriver')
-        # path = shutil.which("chromedriver")
-        path = os.path.dirname(os.path.abspath(__file__)) + "/chromedriver"
+        if not shutil.which("chromedriver"): raise Exception('please install chromedriver')
+        path = shutil.which("chromedriver")
         service_ = service.Service(path)
         self.driver = webdriver.Chrome(service=service_, options=options_)
         self.driver.get("https://www.deepl.com/ja/translator")
@@ -80,6 +85,7 @@ class DeeplDriver:
         buttons = self._find(f'{button_path}/div/button')
         langs = [button.get_attribute('dl-lang') for button in buttons]
         if lang not in langs: raise Exception(f'lang {lang} is not found')
+        self.driver.implicitly_wait(1)
         try: self._find(f'{button_path}/div/button')[langs.index(lang)].click()
         except: raise Exception('failed to click when selecting language')
     def select_source_lang(self,lang):

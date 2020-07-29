@@ -1,79 +1,49 @@
-from Key import *
-import tweepy
 from bot import *
-import time, datetime
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-import emoji
-import logging
-import threading
+import sys, time, datetime, logging, threading
 
-#from requests_oauthlib import OAuth1Session
-Twitter_ID = "eigoyurusan"
-SCREEN_NAME = '英語論文速読bot'
+def init_sleep(interval, initsleep, funcname):
+    if initsleep==None:
+        now = datetime.datetime.now()
+        initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
+    print(f'[{funcname}] initial sleep: {initsleep} s')
+    time.sleep(initsleep)
+    print(f"[{funcname}] started at {datetime.datetime.now()}")
+
+def run(func, interval, funcname):
+    while True:
+        func()
+        # try: func()
+        # except Exception as e:
+        #     print(f"exception at {funcname} function")
+        #     print(e)
+        time.sleep(interval)
 
 def auto_reply(bot, interval, initsleep=None):
-    logging.debug('function of auto reply start')
-    if initsleep==None:
-        now = datetime.datetime.now()
-        initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
-    print(f'[auto reply] initial sleep: {initsleep} s')
-    time.sleep(initsleep)
-    print(f"[auto reply] started at {datetime.datetime.now()}")
-    while True:
-        try: bot.reply()
-        except Exception as e: 
-            print("exception at auto_reply function")
-            print(e) 
-        time.sleep(interval)
+    funcname = sys._getframe().f_code.co_name
+    init_sleep(interval, initsleep, funcname)
+    run(lambda:bot.reply(), interval, funcname)
 
 def auto_tweets(bot, interval, initsleep=None):
-    logging.debug('function of auto tweets start')
-    if initsleep==None:
-        now = datetime.datetime.now()
-        initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
-    print(f'[auto tweet] initial sleep: {initsleep} s')
-    time.sleep(initsleep)
-    print(f"[auto tweet] started at {datetime.datetime.now()}")
-    while True:
-        try: bot.auto_tweet()
-        except Exception as e:
-            print("exception at auto_tweets function")
-            print(e)
-        time.sleep(interval)
+    funcname = sys._getframe().f_code.co_name
+    init_sleep(interval, initsleep, funcname)
+    run(lambda:bot.auto_tweet(), interval, funcname)
 
 def auto_follows(bot, interval, initsleep=None):
-    if initsleep==None:
-        now = datetime.datetime.now()
-        initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
-    print(f'[auto follow] initial sleep: {initsleep} s')
-    time.sleep(initsleep)
-    print(f"[auto follow] started at {datetime.datetime.now()}")
-    while True:
-        try: bot.auto_follow()
-        except Exception as e: 
-            print("exception at auto_follows function")
-            print(e)
-        time.sleep(interval)
-
+    funcname = sys._getframe().f_code.co_name
+    init_sleep(interval, initsleep, funcname)
+    run(lambda:bot.auto_follow(), interval, funcname)
 
 if __name__ == '__main__':
-    #ツイッターapiの作成
-    auth = tweepy.OAuthHandler(CK, CS)
-    auth.set_access_token(AT, AS)
-    api = tweepy.API(auth)
-
     lock = threading.Lock()
+    bot = EigoyurusanBot(lock)
 
-    bot = EigoyurusanBot(api,Twitter_ID,SCREEN_NAME,lock)
-    
     #リプライ要のスレッド
-    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,5*60))
+    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,5*60,0))
     #自動ツイート用のスレッド
     auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot,60*60))
     #自動フォローバック用のスレッド
     auto_follow_thread = threading.Thread(target=auto_follows, args=(bot,5*60))
-    
+
     auto_reply_thread.start()
     auto_tweet_thread.start()
     auto_follow_thread.start()

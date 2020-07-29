@@ -1,39 +1,28 @@
 # -*- coding: utf-8 -*-
-import tweepy
-import json
-import os
-import time
-import threading
-
-from getOutputByKeyword import *
-from getOutputByRandom import *
-import os
-import shutil
+from Twitter import Twitter
+from Paper import Paper
+from DeeplDriver import Translate
 import emoji
-import requests
-
 
 class EigoyurusanBot():
-    def __init__(self,api,Twitter_ID,SCREEN_NAME,lock):
-        self.api = api
-        self.Twitter_ID = Twitter_ID
-        self.SCREEN_NAME = SCREEN_NAME
+    def __init__(self,lock):
+        self.twitter = Twitter()
+        translate = Translate()
+        self.paper = Paper(translate)
         self.lock = lock
-        if os.path.exists('last_rep'):
-            with open('last_rep') as f:
-                self.last_rep = f.readline().rstrip()
-        else: self.last_rep = ''
+
+    def make_papers_text(self, titles:list, urls:list, *, prefix=''):
+        if len("".join(titles))==0: prefix += "\n翻訳に失敗しました."
+
+        length = len("\n".join([prefix] + [f'>{u} :' for u in urls]))
+        title_length = (280 - length) // 8
+        trim = lambda title:title if len(title)<=title_length else title[:title_length-2]+'..'
+        text = "\n".join([prefix] + [f'>{u} :{trim(t)}' for u,t in zip(titles,urls)])
+        return text
 
     def auto_follow(self):
-        #新しい方から順番に20人取ってくる
         self.lock.acquire()
-        followers = set([f.id for f in self.api.followers() if not f.follow_request_sent]) #count = 20
-        friends = set([f.id for f in self.api.friends()])
-        new = followers - friends
-        if new: print("new followers", new)
-        for n in new:
-            self.api.create_friendship(n) #指定したidのuserをフォロー
-            time.sleep(20)
+        self.twitter.followback()
         self.lock.release()
 
     def auto_tweet(self):
@@ -44,102 +33,52 @@ class EigoyurusanBot():
         print("start auto tweet")
         self.lock.acquire()
         #Random search Module
-        ret_cat, rlist = getOutputByRandom()
+        category, ret_list = self.paper.getOutputByRandom()
+        urls, titles = zip(*ret_list)
 
-        length = int((280-len("\n".join([ret_cat[1]]+[f":{url}" for _,url in rlist])))/2/4)
-        texts = [f"#英許_{ret_cat[1]}"]
-        texts.extend([f">{title[:length-3]+'...' if len(title)>length else title}:{url}" for title,url in rlist])
-
-        print("get image files")
-        #画像ファイルの取得
-        auto_path = './images/auto/eigoyurusan/'
-        auto_file_names = os.listdir(auto_path)
-        auto_media_ids = []
-
-        for auto_filename in sorted(auto_file_names)[:len(rlist)]:
-            auto_res = self.api.media_upload(auto_path + auto_filename)
-            auto_media_ids.append(auto_res.media_id)
-        text = "\n".join(texts)
-        print(len(text))
-        print(text)
-        self.api.update_status(status=text, media_ids=auto_media_ids)
-        #画像ファイルの削除
-        for auto_filename in sorted(auto_file_names)[:len(rlist)]:
-            os.remove(auto_path + auto_filename)
+        text = self.make_papers_text(titles, urls, prefix=f'#英許_{category}')
+        media_ids = self.twitter.upload_papers('./images/auto/eigoyurusan/')
+        self.twitter.tweet(text, media_ids=media_ids)
         self.lock.release()
         print("end auto tweet")
 
-
-    #この関数を10分ごとに回す
     def reply(self):
         '''
         Get 200 replies to yourself in a tweet on
         the timeline and tweet an image of the
         resulting translation.
         '''
-        if self.last_rep == '':
-            timeline = self.api.mentions_timeline(count=30)
-        else:
-            timeline = self.api.mentions_timeline(count=200, since_id=self.last_rep)
-        #その時のタイクラインの状況を取ってくる
-        if len(timeline) == 0:#一つもなかった場合
-            print("reply tweets doesn't exist.")
-            return
-        
-        timeline = [status for status in timeline if len(status.entities["user_mentions"])==1]
-        for status in reversed(timeline):
-            try: self.api.create_favorite(status.id)
-            except: pass
-            print(status.id)
+        timeline = self.twitter.get_mentions_custom()
+        if len(timeline)==0: print("reply tweets doesn't exist."); return
 
+        for status in reversed(timeline): self.twitter.try_create_favorite(status.id)
         for status in reversed(timeline):
+            self.twitter.follow_if_not(status.author.id)
             screen_name = status.author.screen_name
-            if status.author.id not in set([f.id for f in self.api.friends()]):
-                try: self.api.create_friendship(status.author.id)
-                except: pass
+            prefix = f"@{screen_name} "
+
             #inpが相手の返信内容
-            keywords = status.text.lstrip("@"+self.Twitter_ID).replace('\n','')#本文の余計な部分を削除
+            keywords = status.text.replace('\n',' ').split(" ")
+            keywords = [k for k in keywords if "@" not in k]
             keywords = "".join([c for c in keywords if c not in emoji.UNICODE_EMOJI])
             print(f"keywords {keywords} are sent by {screen_name}")
+
             #Keyword search Module
-            ret_list, t_keyword = getOutputByKeyword(screen_name, keywords)
-            if len(ret_list)==0: 
+            ret_list, t_keyword = self.paper.getOutputByKeyword(screen_name, keywords)
+            urls, titles = zip(*ret_list)
+
+            self.lock.acquire()
+            if len(ret_list)==0:
                 print(f"no retlist, {t_keyword}")
-                try:
-                    self.api.update_status(status=f"@{screen_name}\n sorry no result for {t_keyword}", in_reply_to_status_id=status.id)
-                    self.last_rep = status.id
-                    with open('last_rep','w') as f: f.write(f"{status.id}")
-                except Exception as e: 
-                    print("exception occured when sorry no result")
-                    print(e)
+                prefix += f'sorry no result for {t_keyword}'
+                self.twitter.tweet(text, reply_to=status.id)
                 continue
-            #ツイート本文
-            #self.reply_text="@"+self.screen_name.decode()+'検索キーワード -> '+self.inp+'\n'+'検索結果\n'
-            prefix = f"@{screen_name}"
+
             if t_keyword != keywords:
-                prefix += f" :{t_keyword}" if len(t_keyword)<40 else f" :{t_keyword[:37]}..."
-            if ret_list[0][0] == '':
-                prefix += "\n英弱発揮したすまん(時間をおいて再度お試しください)"
-            length = int((280-len("\n".join([prefix]+[f":{url}" for _,url in ret_list])))/2/4)
-            texts = [prefix]
-            texts.extend([f">{title[:length-3]+'...' if len(title)>length else title}:{url}" for title,url in ret_list])
-
-            self.lock.acquire()#api変数
-            
-            #画像ファイルの取得
-            path = f'./images/reply/{screen_name}/' #ファイルディレクトリ
-            file_names = os.listdir(path)#ファイルをリストで取得
-            media_ids = []
-            for filename in sorted(file_names)[:len(ret_list)]:
-                res = self.api.media_upload(path + filename)
-                media_ids.append(res.media_id) #idリストへ追加
-            #ツイート
-            text = "\n".join(texts)
-            print(len(text))
+                prefix += f":{t_keyword}" if len(t_keyword)<40 else f":{t_keyword[:37]}..."
+            text = self.make_papers_text(titles, urls, prefix=prefix)
             print(text)
-            self.api.update_status(media_ids=media_ids, status=text, in_reply_to_status_id=status.id)
-            shutil.rmtree(path)#画像ファイル、ディレクトリの削除
-            self.lock.release()
-            self.last_rep = status.id
-            with open('last_rep','w') as f: f.write(f"{status.id}")
+            media_ids = self.twitter.upload_papers(f'./images/reply/{screen_name}/')
+            self.twitter.tweet(text, media_ids=media_ids, reply_to=status.id)
 
+            self.lock.release()
