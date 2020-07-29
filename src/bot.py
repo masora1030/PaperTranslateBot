@@ -36,7 +36,7 @@ class EigoyurusanBot():
         category, ret_list = self.paper.getOutputByRandom()
         urls, titles = zip(*ret_list)
 
-        text = self.make_papers_text(titles, urls, prefix=f'#英許_{category}')
+        text = self.make_papers_text(titles, urls, prefix=f'#英許_{category[1]}')
         media_ids = self.twitter.upload_papers('./images/auto/eigoyurusan/')
         self.twitter.tweet(text, media_ids=media_ids)
         self.lock.release()
