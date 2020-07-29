@@ -38,11 +38,11 @@ if __name__ == '__main__':
     bot = EigoyurusanBot(lock)
 
     #リプライ要のスレッド
-    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,5*60))
+    auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,3*60))
     #自動ツイート用のスレッド
     auto_tweet_thread = threading.Thread(target=auto_tweets, args=(bot,60*60))
     #自動フォローバック用のスレッド
-    auto_follow_thread = threading.Thread(target=auto_follows, args=(bot,5*60))
+    auto_follow_thread = threading.Thread(target=auto_follows, args=(bot,3*60))
 
     auto_reply_thread.start()
     auto_tweet_thread.start()

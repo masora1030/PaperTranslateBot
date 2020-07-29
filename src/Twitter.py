@@ -1,4 +1,4 @@
-import tweepy, os
+import tweepy, os, time
 import secret
 
 class Twitter:
@@ -14,10 +14,13 @@ class Twitter:
         else: self.last_reply_id = None
 
     def followback(self):
-        followers = set([f.id for f in self.api.followers() if not f.follow_request_sent])
+        followers_obj = self.api.followers()
+        followers = set([f.id for f in followers_obj if not f.follow_request_sent])
         friends = set([f.id for f in self.api.friends()])
         new = followers - friends
-        if new: print("new followers", new)
+
+        id_dic = {f.id:f for f in followers_obj}
+        for n in new: print("new followers", id_dic[n].screen_name)
         for n in new:
             self.try_create_friendship(n)
             time.sleep(20)
@@ -27,7 +30,7 @@ class Twitter:
             self.try_create_friendship(id_)
 
     def upload_papers(self, directory):
-        media_ids = [self.api.media_upload(directory+f).media_id for f in os.listdir(directory)]
+        media_ids = [self.api.media_upload(directory+f).media_id for f in sorted(os.listdir(directory))]
         for f in os.listdir(directory): os.remove(directory+f)
         return media_ids
 

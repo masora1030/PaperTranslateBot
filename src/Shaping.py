@@ -20,12 +20,10 @@ def makeHTML(Summary_list):
             <head><meta charset="utf-8"></head>
             <body>
                 <h1>{result['title_JP']}</h1>
-                <h5>{result['title_EN']}</h5>
-                <h5>{result['author']}</h5>
-                <h5>date:{result['date']}</h5>
-                <h3>[概要]</h3>
-                <h3>{abstract_JP}</h3>
-                <h5>{abstract_EN}</h5>
+                <p style="font-size:11px">{result['title_EN']}[{result['author']}]</p>
+                <p style="font-size:15px">date:{result['date']}</p>
+                <p style="font-size:20px">{abstract_JP}</p>
+                <p style="font-size:11px">{abstract_EN}</p>
             </body>
         </html>
         """

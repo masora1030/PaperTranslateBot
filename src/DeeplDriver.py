@@ -45,7 +45,7 @@ class DeeplDriver:
         service_ = service.Service(path)
         self.driver = webdriver.Chrome(service=service_, options=options_)
         self.driver.get("https://www.deepl.com/ja/translator")
-
+        self._find('//*[@id="dl_cookieBanner"]/div[1]/div[1]/div[1]/span/div[2]/button')[0].click()
         base = '//*[@id="dl_translator"]/div[1]'
         source = f'{base}/div[3]'
         target = f'{base}/div[4]'
@@ -83,13 +83,14 @@ class DeeplDriver:
     # langs are ['auto'(source-only), 'JA', 'EN', 'DE', 'FR', 'ES', 'PT', 'IT', 'NL', 'PL', 'RU', 'ZH']
     def select_lang(self, lang, button_path):
         self._find(f'{button_path}/button')[0].click()
-        self.wait_translate()
+        self.driver.implicitly_wait(1)
         buttons = self._find(f'{button_path}/div/button')
         langs = [button.get_attribute('dl-lang') for button in buttons]
         if lang not in langs: raise Exception(f'lang {lang} is not found')
-        self.driver.implicitly_wait(1)
         try: self._find(f'{button_path}/div/button')[langs.index(lang)].click()
-        except: raise Exception('failed to click when selecting language')
+        except:
+            self.driver.save_screenshot('./error.png')
+            raise Exception('failed to click when selecting language')
     def select_source_lang(self,lang):
         self.select_lang(lang, f'{self.source_lang}/div[1]')
     def select_target_lang(self,lang):
@@ -104,11 +105,14 @@ class DeeplDriver:
         return "".join([e.get_attribute('value') for e in textarea])
 
     def translate(self, text, source_lang='auto', target_lang="JA"):
-        if source_lang == "auto" and self.detect_lang(text) == target_lang: return text
+        langdic = {'JA':'日本語','EN':'英語','RU':'ロシア語','PL':'ポーランド語','NL':'オランダ語',
+            'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
+        if source_lang == "auto" and self.detect_lang(text) == langdic[target_lang]: return text
 
         self.select_source_lang(source_lang)
         self.select_target_lang(target_lang)
         self.put_source(text)
         self.wait_translate()
         translated = self.get_target()
+        self.put_source("")
         return translated

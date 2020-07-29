@@ -14,10 +14,10 @@ class EigoyurusanBot():
     def make_papers_text(self, titles:list, urls:list, *, prefix=''):
         if len("".join(titles))==0: prefix += "\n翻訳に失敗しました."
 
-        length = len("\n".join([prefix] + [f'>{u} :' for u in urls]))
+        length = len("\n".join([prefix] + [f'>{u}\n' for u in urls]))
         title_length = (280 - length) // 8
         trim = lambda title:title if len(title)<=title_length else title[:title_length-2]+'..'
-        text = "\n".join([prefix] + [f'>{u} :{trim(t)}' for u,t in zip(titles,urls)])
+        text = "\n".join([prefix] + [f'>{trim(t)}\n{u}' for u,t in zip(titles,urls)])
         return text
 
     def auto_follow(self):
@@ -60,19 +60,20 @@ class EigoyurusanBot():
             #inpが相手の返信内容
             keywords = status.text.replace('\n',' ').split(" ")
             keywords = [k for k in keywords if "@" not in k]
+            keywords = " ".join(keywords)
             keywords = "".join([c for c in keywords if c not in emoji.UNICODE_EMOJI])
             print(f"keywords {keywords} are sent by {screen_name}")
 
             #Keyword search Module
             ret_list, t_keyword = self.paper.getOutputByKeyword(screen_name, keywords)
-            urls, titles = zip(*ret_list)
 
-            self.lock.acquire()
             if len(ret_list)==0:
                 print(f"no retlist, {t_keyword}")
                 prefix += f'sorry no result for {t_keyword}'
-                self.twitter.tweet(text, reply_to=status.id)
+                self.twitter.tweet(prefix, reply_to=status.id)
                 continue
+
+            urls, titles = zip(*ret_list)
 
             if t_keyword != keywords:
                 prefix += f":{t_keyword}" if len(t_keyword)<40 else f":{t_keyword[:37]}..."
@@ -81,4 +82,3 @@ class EigoyurusanBot():
             media_ids = self.twitter.upload_papers(f'./images/reply/{screen_name}/')
             self.twitter.tweet(text, media_ids=media_ids, reply_to=status.id)
 
-            self.lock.release()

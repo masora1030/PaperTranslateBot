@@ -35,11 +35,15 @@ class Search:
             return start, end
 
         results = []
-        for i in range(100):
-            start, end = get_randomdate(2019 if i<=2 else 2010)
+        for i in range(10):
+            start, end = get_randomdate(2019 if i<=2 else 2010 if i<=7 else 1975)
             query_ = f"{query} AND submittedDate:[{start} TO {end}]"
-            ret = arxiv.query(query=query_, max_results=1)
-            if ret and sum([r.pdf_url==ret[0].pdf_url for r in results])==0: results.append(ret[0])
+            print(query_)
+            ret = arxiv.query(query=query_, max_results=5)
+            for ret_ in ret:
+                if sum([r.pdf_url==ret_.pdf_url for r in results])==0: 
+                    results.append(ret_)
+                    break
             if len(results) >= 4: break
         
         return self.shaping(results)
