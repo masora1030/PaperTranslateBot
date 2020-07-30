@@ -83,10 +83,11 @@ class DeeplDriver:
     # langs are ['auto'(source-only), 'JA', 'EN', 'DE', 'FR', 'ES', 'PT', 'IT', 'NL', 'PL', 'RU', 'ZH']
     def select_lang(self, lang, button_path):
         self._find(f'{button_path}/button')[0].click()
-        self.driver.implicitly_wait(1)
+        self.driver.implicitly_wait(1.5)
         buttons = self._find(f'{button_path}/div/button')
         langs = [button.get_attribute('dl-lang') for button in buttons]
         if lang not in langs: raise Exception(f'lang {lang} is not found')
+        self.driver.save_screenshot('./error_.png')
         try: self._find(f'{button_path}/div/button')[langs.index(lang)].click()
         except:
             self.driver.save_screenshot('./error.png')
