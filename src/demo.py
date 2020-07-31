@@ -11,11 +11,10 @@ def init_sleep(interval, initsleep, funcname):
 
 def run(func, interval, funcname):
     while True:
-        func()
-        # try: func()
-        # except Exception as e:
-        #     print(f"exception at {funcname} function")
-        #     print(e)
+        try: func()
+        except Exception as e:
+             print(f"exception at {funcname} function")
+             print(e)
         time.sleep(interval)
 
 def auto_reply(bot, interval, initsleep=None):

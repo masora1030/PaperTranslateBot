@@ -44,8 +44,6 @@ class DeeplDriver:
         path = shutil.which("chromedriver")
         service_ = service.Service(path)
         self.driver = webdriver.Chrome(service=service_, options=options_)
-        self.driver.get("https://www.deepl.com/ja/translator")
-        self._find('//*[@id="dl_cookieBanner"]/div[1]/div[1]/div[1]/span/div[2]/button')[0].click()
         base = '//*[@id="dl_translator"]/div[1]'
         source = f'{base}/div[3]'
         target = f'{base}/div[4]'
@@ -55,6 +53,15 @@ class DeeplDriver:
         self.target_lang_button = f'{self.target_lang}/div[1]/button'
         self.source_textarea = f'{source}/div[2]/div[1]/textarea'
         self.target_textarea = f'{target}/div[3]/div[1]/textarea'
+        self.initialize()
+
+    def initialize(self):
+        self.driver.get("https://www.deepl.com/ja/translator")
+        self.driver.implicitly_wait(2)
+        self._find('//*[@id="dl_cookieBanner"]/div[1]/div[1]/div[1]/span/div[2]/button')[0].click()
+        self.driver.implicitly_wait(1)
+        self.put_source("")
+        self.driver.implicitly_wait(1)
 
     def __del__(self): self.driver.close()
 
@@ -71,9 +78,15 @@ class DeeplDriver:
     def is_empty(self):
         return self.has_class("lmt--empty_source")
     def wait_translate(self):
+        start = time.time()
+        time.sleep(1)
         while self.is_busy(): time.sleep(0.1)
+        time.sleep(3)
+        end = time.time()
+        print(end-start)
 
     def detect_lang(self, text):
+        self.driver.implicitly_wait(1.5)
         textarea = self._find(self.source_textarea)[0]
         textarea.clear()
         textarea.send_keys(text)
@@ -105,15 +118,26 @@ class DeeplDriver:
         textarea = self._find(self.target_textarea)
         return "".join([e.get_attribute('value') for e in textarea])
 
-    def translate(self, text, source_lang='auto', target_lang="JA"):
+    def _translate(self, text, source_lang, target_lang):
         langdic = {'JA':'日本語','EN':'英語','RU':'ロシア語','PL':'ポーランド語','NL':'オランダ語',
-            'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
+                            'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
         if source_lang == "auto" and self.detect_lang(text) == langdic[target_lang]: return text
-
+        
         self.select_source_lang(source_lang)
         self.select_target_lang(target_lang)
         self.put_source(text)
+        time.sleep(8)
         self.wait_translate()
         translated = self.get_target()
         self.put_source("")
         return translated
+
+    def translate(self, text, source_lang='auto', target_lang="JA"):
+        for i in range(4):
+            try:
+                translated = self._translate(text, source_lang, target_lang)
+                return translated
+            except:
+                print(f"failed to translate, {i} times")
+                self.initialize()
+        raise Exception('failed to translate...')
