@@ -1,36 +1,34 @@
 from bot import *
 import sys, time, datetime, logging, threading
 
-def init_sleep(interval, initsleep, funcname):
+def interval_sleep(interval, initsleep, funcname):
     if initsleep==None:
         now = datetime.datetime.now()
         initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
-    print(f'[{funcname}] initial sleep: {initsleep} s')
+    print(f'[{funcname}] sleep: {initsleep} s')
     time.sleep(initsleep)
     print(f"[{funcname}] started at {datetime.datetime.now()}")
 
-def run(func, interval, funcname):
+def run(func, interval, initsleep, funcname):
+    interval_sleep(interval, initsleep, funcname)
     while True:
         try: func()
         except Exception as e:
              print(f"exception at {funcname} function")
              print(e)
-        time.sleep(interval)
+        interval_sleep(interval, None, funcname)
 
 def auto_reply(bot, interval, initsleep=None):
     funcname = sys._getframe().f_code.co_name
-    init_sleep(interval, initsleep, funcname)
-    run(lambda:bot.reply(), interval, funcname)
+    run(lambda:bot.reply(), interval, initsleep, funcname)
 
 def auto_tweets(bot, interval, initsleep=None):
     funcname = sys._getframe().f_code.co_name
-    init_sleep(interval, initsleep, funcname)
-    run(lambda:bot.auto_tweet(), interval, funcname)
+    run(lambda:bot.auto_tweet(), interval, initsleep, funcname)
 
 def auto_follows(bot, interval, initsleep=None):
     funcname = sys._getframe().f_code.co_name
-    init_sleep(interval, initsleep, funcname)
-    run(lambda:bot.auto_follow(), interval, funcname)
+    run(lambda:bot.auto_follow(), interval, initsleep, funcname)
 
 if __name__ == '__main__':
     lock = threading.Lock()

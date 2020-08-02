@@ -8,7 +8,7 @@ def makeJPG(HTML_list, TwitterID, path='reply'):
     os.makedirs(filedir, exist_ok=True)
     for i,html in enumerate(HTML_list):
         filepath = f"{filedir}/result_{i+1}.jpg"
-        imgkit.from_string(html, filepath, options={'width':650})        
+        imgkit.from_string(html, filepath, options={'width':1300}) 
 
 def makeHTML(Summary_list):
     retHTML = []
@@ -18,12 +18,12 @@ def makeHTML(Summary_list):
         html = f"""<!DOCTYPE html>
         <html lang="ja">
             <head><meta charset="utf-8"></head>
-            <body>
-                <h1>{result['title_JP']}</h1>
-                <p style="font-size:11px">{result['title_EN']}[{result['author']}]</p>
-                <p style="font-size:15px">date:{result['date']}</p>
-                <p style="font-size:20px">{abstract_JP}</p>
-                <p style="font-size:11px">{abstract_EN}</p>
+            <body style="margin:50px">
+                <h1 style="font-size:55px">{result['title_JP']}</h1>
+                <p style="font-size:22px">{result['title_EN']}[{result['author']}]</p>
+                <p style="font-size:30px">date:{result['date']}</p>
+                <p style="font-size:40px">{abstract_JP}</p>
+                <p style="font-size:22px">{abstract_EN}</p>
             </body>
         </html>
         """

@@ -4,3 +4,4 @@ nohup.out
 *.swp
 images/
 downloads/
+*secret*

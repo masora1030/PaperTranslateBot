@@ -48,7 +48,7 @@ class DeeplDriver:
         source = f'{base}/div[3]'
         target = f'{base}/div[4]'
         self.source_lang = f'{source}/div[1]'
-        self.target_lang = f'{target}/div[1]'
+        self.target_lang = f'{target}/div[1]/div[1]'
         self.source_lang_button = f'{self.source_lang}/div[1]/button'
         self.target_lang_button = f'{self.target_lang}/div[1]/button'
         self.source_textarea = f'{source}/div[2]/div[1]/textarea'
@@ -78,58 +78,63 @@ class DeeplDriver:
     def is_empty(self):
         return self.has_class("lmt--empty_source")
     def wait_translate(self):
-        start = time.time()
-        time.sleep(1)
-        while self.is_busy(): time.sleep(0.1)
-        time.sleep(3)
-        end = time.time()
-        print(end-start)
-
-    def detect_lang(self, text):
-        self.driver.implicitly_wait(1.5)
-        textarea = self._find(self.source_textarea)[0]
-        textarea.clear()
-        textarea.send_keys(text)
-        self.wait_translate()
+        time.sleep(0.1)
+        while self.is_busy():
+            while self.is_busy(): time.sleep(0.1)
+            time.sleep(1)
+        
+    def get_selected_source_lang(self):
         return self._find(f'{self.source_lang_button}/span/strong')[0].text
+    def get_selected_target_lang(self):
+        return self._find(f'{self.target_lang_button}/span/strong')[0].text
 
     # langs are ['auto'(source-only), 'JA', 'EN', 'DE', 'FR', 'ES', 'PT', 'IT', 'NL', 'PL', 'RU', 'ZH']
     def select_lang(self, lang, button_path):
         self._find(f'{button_path}/button')[0].click()
-        self.driver.implicitly_wait(1.5)
+        time.sleep(1.5)
         buttons = self._find(f'{button_path}/div/button')
         langs = [button.get_attribute('dl-lang') for button in buttons]
         if lang not in langs: raise Exception(f'lang {lang} is not found')
-        self.driver.save_screenshot('./error_.png')
-        try: self._find(f'{button_path}/div/button')[langs.index(lang)].click()
-        except:
-            self.driver.save_screenshot('./error.png')
-            raise Exception('failed to click when selecting language')
+        self._find(f'{button_path}/div/button')[langs.index(lang)].click()
+        time.sleep(1)
     def select_source_lang(self,lang):
         self.select_lang(lang, f'{self.source_lang}/div[1]')
     def select_target_lang(self,lang):
-        self.select_lang(lang, f'{self.target_lang}/div[1]/div[1]')
+        self.select_lang(lang, f'{self.target_lang}/div[1]')
 
     def put_source(self,text):
         textarea = self._find(self.source_textarea)[0]
         textarea.clear()
         textarea.send_keys(text)
+        pre = None
+        while True:
+            tmp = self.get_source()
+            if tmp == pre: break
+            pre = tmp
+            time.sleep(0.5)
+
+    def get_source(self):
+        textarea = self._find(self.source_textarea)[0]
+        return textarea.get_attribute('value')
     def get_target(self):
-        textarea = self._find(self.target_textarea)
-        return "".join([e.get_attribute('value') for e in textarea])
+        textarea = self._find(self.target_textarea)[0]
+        return textarea.get_attribute('value')
 
     def _translate(self, text, source_lang, target_lang):
-        langdic = {'JA':'日本語','EN':'英語','RU':'ロシア語','PL':'ポーランド語','NL':'オランダ語',
-                            'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
-        if source_lang == "auto" and self.detect_lang(text) == langdic[target_lang]: return text
-        
         self.select_source_lang(source_lang)
-        self.select_target_lang(target_lang)
+        self.put_source("")
         self.put_source(text)
-        time.sleep(8)
+
+        langdic = {'JA':'日本語','EN':'英語','RU':'ロシア語','PL':'ポーランド語','NL':'オランダ語',
+            'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
+        if source_lang == "auto" and self.get_selected_source_lang() == langdic[target_lang]: return text
+        
+        if self.get_selected_target_lang() != langdic[target_lang]:
+            self.select_target_lang(target_lang)
+            time.sleep(0.5)
+
         self.wait_translate()
         translated = self.get_target()
-        self.put_source("")
         return translated
 
     def translate(self, text, source_lang='auto', target_lang="JA"):
