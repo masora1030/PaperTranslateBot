@@ -1,21 +1,25 @@
 from bot import *
-import sys, time, datetime, logging, threading
+import sys, time, datetime, threading
+from logging import basicConfig, getLogger, INFO
+
+basicConfig(level=INFO)
+logger = getLogger('_')
 
 def interval_sleep(interval, initsleep, funcname):
     if initsleep==None:
         now = datetime.datetime.now()
         initsleep = interval-(now.minute*60+now.second+now.microsecond/100000)%interval
-    print(f'[{funcname}] sleep: {initsleep} s')
+    logger.debug(f'[{funcname}] sleep: {initsleep} s')
     time.sleep(initsleep)
-    print(f"[{funcname}] started at {datetime.datetime.now()}")
+    logger.info(f"[{funcname}] started at {datetime.datetime.now()}")
 
 def run(func, interval, initsleep, funcname):
     interval_sleep(interval, initsleep, funcname)
     while True:
         try: func()
         except Exception as e:
-             print(f"exception at {funcname} function")
-             print(e)
+            logger.warning(f"exception at {funcname} function")
+            logger.warning(e)
         interval_sleep(interval, None, funcname)
 
 def auto_reply(bot, interval, initsleep=None):
@@ -32,8 +36,8 @@ def auto_follows(bot, interval, initsleep=None):
 
 if __name__ == '__main__':
     lock = threading.Lock()
-    bot = EigoyurusanBot(lock)
-
+    bot = EigoyurusanBot(lock, logger)
+    
     #リプライ要のスレッド
     auto_reply_thread = threading.Thread(target=auto_reply, args=(bot,3*60))
     #自動ツイート用のスレッド

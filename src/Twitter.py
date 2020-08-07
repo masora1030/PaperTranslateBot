@@ -2,10 +2,11 @@ import tweepy, os, time
 import secret
 
 class Twitter:
-    def __init__(self):
+    def __init__(self, logger):
         auth = tweepy.OAuthHandler(secret.CK, secret.CS)
         auth.set_access_token(secret.AT, secret.AS)
         self.api = tweepy.API(auth)
+        self.logger = logger
         # self.Twitter_ID = "eigoyurusan"
         # self.SCREEN_NAME = '英語論文速読bot'
         if os.path.exists('last_rep'):
@@ -20,7 +21,7 @@ class Twitter:
         new = followers - friends
 
         id_dic = {f.id:f for f in followers_obj}
-        for n in new: print("new followers", id_dic[n].screen_name)
+        for n in new: self.logger.info(f"new followers {id_dic[n].screen_name}")
         for n in new:
             self.try_create_friendship(n)
             time.sleep(20)
@@ -37,7 +38,7 @@ class Twitter:
     def tweet(self, text, *, media_ids=[], reply_to=None):
         try:
             self.api.update_status(text, media_ids=media_ids, in_reply_to_status_id=reply_to)
-        except Exception as e: print(e)
+        except Exception as e: self.logger.warning(e)
         if reply_to:
             self.last_reply_id = reply_to
             with open('last_rep','w') as f: f.write(f"{reply_to}")
@@ -54,8 +55,8 @@ class Twitter:
 
     def try_create_favorite(self, id_):
         try: self.api.create_favorite(id_)
-        except: print(f'failed to create favorite to {id_}')
+        except: self.logger.warning(f'failed to create favorite to {id_}')
 
     def try_create_friendship(self, id_):
         try: self.api.create_friendship(id_)
-        except: print(f'failed to create friendship with {id_}')
+        except: self.logger.warning(f'failed to create friendship with {id_}')

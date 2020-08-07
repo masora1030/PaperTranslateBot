@@ -2,9 +2,9 @@ from Search import Search
 from Shaping import makeHTML, makeJPG
 
 class Paper:
-    def __init__(self, translate):
+    def __init__(self, logger, translate):
         self.translate = translate
-        self.search = Search(translate)
+        self.search = Search(logger, translate)
 
     def getOutputByCategory(self, TwitterID, category):
         Summary_list, ce, cj = self.search.searchByCategory(category)

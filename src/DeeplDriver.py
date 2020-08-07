@@ -3,8 +3,9 @@ from selenium.webdriver.chrome import options, service
 import time, os, random, shutil, queue, threading
 
 class Translate:
-    def __init__(self):
-        self.dDriver = DeeplDriver()
+    def __init__(self, logger):
+        self.logger = logger
+        self.dDriver = DeeplDriver(logger)
         self.queue = queue.Queue()
         self.results = {}
         threading.Thread(target=self.process).start()
@@ -31,13 +32,14 @@ class Translate:
         while True:
             obj = self.queue.get()
             id_ = obj['id_']
-            print(f'processing translate {id_}')
+            self.logger.info(f'processing translate {id_}')
             del obj['id_']
             res = self.dDriver.translate(**obj)
             self.results[id_] = res
 
 class DeeplDriver:
-    def __init__(self):
+    def __init__(self,logger):
+        self.logger = logger
         options_ = options.Options()
         options_.headless = True
         if not shutil.which("chromedriver"): raise Exception('please install chromedriver')
@@ -124,7 +126,7 @@ class DeeplDriver:
         self.select_source_lang(source_lang)
         self.put_source("")
         self.put_source(text)
-
+        self.wait_translate()
         langdic = {'JA':'日本語','EN':'英語','RU':'ロシア語','PL':'ポーランド語','NL':'オランダ語',
             'IT':'イタリア語','PT':'ポルトガル語','ES':'スペイン語','FR':'フランス語','DE':'ドイツ語','ZH':'中国語'}
         if source_lang == "auto" and self.get_selected_source_lang() == langdic[target_lang]: return text
@@ -142,7 +144,8 @@ class DeeplDriver:
             try:
                 translated = self._translate(text, source_lang, target_lang)
                 return translated
-            except:
-                print(f"failed to translate, {i} times")
+            except Exception as e:
+                self.logger.warning(f"failed to translate, {i} times")
+                self.logger.warning(e)
                 self.initialize()
-        raise Exception('failed to translate...')
+        raise Exception("failed to translate")

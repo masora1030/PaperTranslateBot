@@ -3,7 +3,8 @@ import random, datetime, time, re
 from cat_list import cat_list
 
 class Search:
-    def __init__(self, translate):
+    def __init__(self, logger, translate):
+        self.logger = logger
         self.translate = translate
 
     def searchByRandom(self):
@@ -16,7 +17,7 @@ class Search:
         if not (re.findall('^[a-zA-Z1-9 .\',!\?#]+$', input_str)):
             input_str = self.translate(input_str, target_lang="EN")
         query = "all:'{}'".format(input_str)
-        return self.search_random(query), input_str
+        return self.search_n(query, 4), input_str
 
     def searchByCategory(self, category):
         en_catlist = list(map(lambda x:x[0], cat_list))
@@ -38,7 +39,7 @@ class Search:
         for i in range(10):
             start, end = get_randomdate(2019 if i<=2 else 2010 if i<=7 else 1975)
             query_ = f"{query} AND submittedDate:[{start} TO {end}]"
-            print(query_)
+            self.logger.info(query_)
             ret = arxiv.query(query=query_, max_results=5)
             for ret_ in ret:
                 if sum([r.pdf_url==ret_.pdf_url for r in results])==0: 
@@ -49,9 +50,15 @@ class Search:
         return self.shaping(results)
 
     def search_n_random(self, query, n):
+        self.logger.info(query)
         ret = arxiv.query(query=query, max_results=n)
         results = random.sample(ret, 4) if len(ret)>=4 else ret
         return self.shaping(results)
+
+    def search_n(self, query, n):
+        self.logger.info(query)
+        ret = arxiv.query(query=query, max_results=n)
+        return self.shaping(ret)
         
     def shaping(self, results):
         shaped = []

@@ -5,11 +5,12 @@ from DeeplDriver import Translate
 import emoji
 
 class EigoyurusanBot():
-    def __init__(self,lock):
-        self.twitter = Twitter()
-        translate = Translate()
-        self.paper = Paper(translate)
+    def __init__(self,lock,logger):
+        self.twitter = Twitter(logger)
+        translate = Translate(logger)
+        self.paper = Paper(logger, translate)
         self.lock = lock
+        self.logger = logger
 
     def make_papers_text(self, titles:list, urls:list, *, prefix=''):
         if len("".join(titles))==0: prefix += "\n翻訳に失敗しました."
@@ -28,14 +29,12 @@ class EigoyurusanBot():
         Automatically tweets the content of papers
         searched for in random categories
         '''
-        print("start auto tweet")
         category, ret_list = self.paper.getOutputByRandom()
         urls, titles = zip(*ret_list)
 
         text = self.make_papers_text(titles, urls, prefix=f'#英許_{category[1]}')
         media_ids = self.twitter.upload_papers('./images/auto/eigoyurusan/')
         self.twitter.tweet(text, media_ids=media_ids)
-        print("end auto tweet")
 
     def reply(self):
         '''
@@ -44,7 +43,7 @@ class EigoyurusanBot():
         resulting translation.
         '''
         timeline = self.twitter.get_mentions_custom()
-        if len(timeline)==0: print("reply tweets doesn't exist."); return
+        if len(timeline)==0: self.logger.info("reply tweets doesn't exist."); return
 
         for status in reversed(timeline): self.twitter.try_create_favorite(status.id)
         for status in reversed(timeline):
@@ -57,13 +56,13 @@ class EigoyurusanBot():
             keywords = [k for k in keywords if "@" not in k]
             keywords = " ".join(keywords)
             keywords = "".join([c for c in keywords if c not in emoji.UNICODE_EMOJI])
-            print(f"keywords {keywords} are sent by {screen_name}")
+            self.logger.info(f"keywords {keywords} are sent by {screen_name}")
 
             #Keyword search Module
             ret_list, t_keyword = self.paper.getOutputByKeyword(screen_name, keywords)
 
             if len(ret_list)==0:
-                print(f"no retlist, {t_keyword}")
+                self.logger.info(f"no retlist, {t_keyword}")
                 prefix += f'sorry no result for {t_keyword}'
                 self.twitter.tweet(prefix, reply_to=status.id)
                 continue
@@ -73,7 +72,7 @@ class EigoyurusanBot():
             if t_keyword != keywords:
                 prefix += f":{t_keyword}" if len(t_keyword)<40 else f":{t_keyword[:37]}..."
             text = self.make_papers_text(titles, urls, prefix=prefix)
-            print(text)
+            self.logger.info(text)
             media_ids = self.twitter.upload_papers(f'./images/reply/{screen_name}/')
             self.twitter.tweet(text, media_ids=media_ids, reply_to=status.id)
 
